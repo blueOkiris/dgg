@@ -1,0 +1,51 @@
+cabal-version: 1.12
+
+-- This file has been generated from package.yaml by hpack version 0.33.0.
+--
+-- see: https://github.com/sol/hpack
+--
+-- hash: 3d8134ff46d61cb570412b3c59f3c7b5c6dd6e4aa69effba43b3b296e19c8c7a
+
+name:           DGG
+version:        0.1.0.0
+description:    Please see the README on GitHub at <https://github.com/blueOkiris/dgg>
+homepage:       https://github.com/blueOkiris/dgg#readme
+bug-reports:    https://github.com/blueOkiris/dgg/issues
+author:         Dylan Turner
+maintainer:     dylant@gmail.com
+copyright:      2020 Dylan Turner
+license:        GNU3
+license-file:   LICENSE
+build-type:     Simple
+extra-source-files:
+    README.md
+    ChangeLog.md
+
+source-repository head
+  type: git
+  location: https://github.com/blueOkiris/dgg
+
+library
+  exposed-modules:
+      GUIObject
+  other-modules:
+      Paths_DGG
+  hs-source-dirs:
+      src
+  build-depends:
+      base >=4.7 && <5
+    , gloss >=1.13
+  default-language: Haskell2010
+
+executable dgg
+  main-is: Main.hs
+  other-modules:
+      Paths_DGG
+  hs-source-dirs:
+      app
+  ghc-options: -threaded -rtsopts -with-rtsopts=-N
+  build-depends:
+      DGG
+    , base >=4.7 && <5
+    , gloss >=1.13
+  default-language: Haskell2010
