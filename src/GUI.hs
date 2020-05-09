@@ -4,12 +4,14 @@ module GUI where
 
 import Graphics.Gloss.Data.Color
 import Graphics.Gloss.Data.Picture(Picture(..))
-import Graphics.Gloss.Interface.IO.Game(Event(..), Key(..), MouseButton(..), Modifiers(..), KeyState(..))
+import Graphics.Gloss.Interface.IO.Game
+
+-- The generic wrapper object
+data WAppObject = forall a. (IAppObject a, IDrawable a, IInteractive a, IContainer a) => WAppObject a
 
 class IAppObject obj where
     name :: obj -> String
 -- Create a wrapper so we can store it all in dictionaries
-data WAppObject = forall a. (IAppObject a) => WAppObject a
 instance IAppObject WAppObject where
     name (WAppObject obj) =
         name obj
@@ -33,6 +35,13 @@ instance IDrawable WDrawable where
         position obj
     size (WDrawable obj) =
         size obj
+instance IDrawable WAppObject where
+    drawObj (WAppObject obj) state =
+        drawObj obj state
+    position (WAppObject obj) =
+        position obj
+    size (WAppObject obj) =
+        size obj
 
 -- Interactive widgets like a button
 class (IAppObject obj) => IInteractive obj where
@@ -54,16 +63,26 @@ class (IAppObject obj) => IInteractive obj where
     eventHandler obj state _ =
         state
 
-    updateObj       :: obj -> [WAppObject] -> [WAppObject]
+    updateObj       :: obj -> [WAppObject] -> Float -> [WAppObject]
     keyDown         :: obj -> [WAppObject] -> Key -> Modifiers -> [WAppObject]
     keyUp           :: obj -> [WAppObject] -> Key -> Modifiers -> [WAppObject]
     mouseDown       :: obj -> [WAppObject] -> MouseButton -> Modifiers -> (Float, Float) -> [WAppObject]
     mouseUp         :: obj -> [WAppObject] -> MouseButton -> Modifiers -> (Float, Float) -> [WAppObject]
     mouseMove       :: obj -> [WAppObject] -> (Float, Float) -> [WAppObject]
+instance IInteractive WAppObject where
+    eventHandler (WAppObject o) s e = eventHandler o s e
+    updateObj (WAppObject o) s d = updateObj o s d
+    keyDown (WAppObject o) k m = keyDown o k m
+    keyUp (WAppObject o) k m = keyUp o k m
+    mouseDown (WAppObject o) b m p = mouseDown o b m p
+    mouseUp (WAppObject o) b m p = mouseUp o b m p
+    mouseMove (WAppObject o) s p = mouseMove o s p
 
 -- Layout things
 class (IDrawable obj) => IContainer obj where
     children        :: obj -> [WDrawable]
+instance IContainer WAppObject where
+    children (WAppObject o) = children o
 
 -- Create a button widget
 data Button = Button
@@ -105,7 +124,7 @@ instance IInteractive Button where
             (xi, yi) = (round x, round y)
             inBtn = (xi >= bx) && (xi <= bx + bw) && (yi > by) && (yi <= by + bh)
 
-    updateObj btn state = state
+    updateObj btn state deltaTime = state
     keyDown btn state key mods = state
     keyUp btn state key mods = state
     mouseMove btn state pos = state

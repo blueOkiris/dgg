@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 2593dbf5c79a065a959f8b102c60c4c8f789ef1470cc81f0520ed93ef2a7d7c6
+-- hash: a33284b0498bdc6aa7a04fd4ac233b15c7dbb6bde6c60146a09609c1b4abf903
 
 name:           DGG
 version:        0.1.0.0
@@ -27,6 +27,7 @@ source-repository head
 
 library
   exposed-modules:
+      App
       GUI
   other-modules:
       Paths_DGG
