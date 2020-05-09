@@ -15,8 +15,9 @@ instance IAppObject WAppObject where
         name obj
 
 class (IAppObject obj) => IDrawable obj where
-    drawObj     :: obj -> state -> Picture
-    position    :: obj -> state -> (Int, Int)
+    drawObj     :: obj -> [WAppObject] -> Picture
+    position    :: obj -> (Int, Int)
+    size        :: obj -> (Int, Int)
 -- Wrapper so container can store it
 data WDrawable = forall a. (IDrawable a) => WDrawable a
 -- Required in order to be an argument for a drawable
@@ -28,12 +29,14 @@ instance IAppObject WDrawable where
 instance IDrawable WDrawable where
     drawObj (WDrawable obj) state =
         drawObj obj state
-    position (WDrawable obj) state =
-        position obj state
+    position (WDrawable obj) =
+        position obj
+    size (WDrawable obj) =
+        size obj
 
 -- Interactive widgets like a button
 class (IAppObject obj) => IInteractive obj where
-    eventHandler    :: obj -> state -> Event -> state
+    eventHandler    :: obj -> [WAppObject] -> Event -> [WAppObject]
     eventHandler obj state (EventKey (MouseButton btn) Down mod (x, y)) =
         mouseDown obj state btn mod (x, y)
     eventHandler obj state (EventKey (MouseButton btn) Up mod (x, y)) =
@@ -51,15 +54,58 @@ class (IAppObject obj) => IInteractive obj where
     eventHandler obj state _ =
         state
 
-    updateObj       :: obj -> state -> state
-    keyDown         :: obj -> state -> Key -> Modifiers -> state
-    keyUp           :: obj -> state -> Key -> Modifiers -> state
-    mouseDown       :: obj -> state -> MouseButton -> Modifiers -> (Float, Float) -> state
-    mouseUp         :: obj -> state -> MouseButton -> Modifiers -> (Float, Float) -> state
-    mouseMove       :: obj -> state -> (Float, Float) -> state
+    updateObj       :: obj -> [WAppObject] -> [WAppObject]
+    keyDown         :: obj -> [WAppObject] -> Key -> Modifiers -> [WAppObject]
+    keyUp           :: obj -> [WAppObject] -> Key -> Modifiers -> [WAppObject]
+    mouseDown       :: obj -> [WAppObject] -> MouseButton -> Modifiers -> (Float, Float) -> [WAppObject]
+    mouseUp         :: obj -> [WAppObject] -> MouseButton -> Modifiers -> (Float, Float) -> [WAppObject]
+    mouseMove       :: obj -> [WAppObject] -> (Float, Float) -> [WAppObject]
 
 -- Layout things
 class (IDrawable obj) => IContainer obj where
     children        :: obj -> [WDrawable]
 
-data AppState = [WAppObject]
+-- Create a button widget
+data Button = Button
+    { btnLeftClick      :: Modifiers -> [WAppObject] -> [WAppObject]
+    , btnLeftRelease    :: Modifiers -> [WAppObject] -> [WAppObject]
+    , btnName           :: String 
+    , btnPosition       :: (Int, Int)
+    , btnSize           :: (Int, Int) }
+instance IAppObject Button where
+    name btn =
+        btnName btn
+instance IDrawable Button where
+    drawObj btn state =
+        Blank                   -- TODO: Implement button drawing code
+    position btn =
+        btnPosition btn
+    size btn =
+        btnSize btn
+instance IInteractive Button where
+    mouseDown btn state clickType mods (x, y)
+        | inBtn =
+            (btnLeftClick btn) mods state
+        | otherwise =
+            state
+        where
+            (bx, by) = btnPosition btn
+            (bw, bh) = btnSize btn
+            (xi, yi) = (round x, round y)
+            inBtn = (xi >= bx) && (xi <= bx + bw) && (yi > by) && (yi <= by + bh)
+
+    mouseUp btn state clickType mods (x, y)
+        | inBtn =
+            (btnLeftRelease btn) mods state
+        | otherwise =
+            state
+        where
+            (bx, by) = btnPosition btn
+            (bw, bh) = btnSize btn
+            (xi, yi) = (round x, round y)
+            inBtn = (xi >= bx) && (xi <= bx + bw) && (yi > by) && (yi <= by + bh)
+
+    updateObj btn state = state
+    keyDown btn state key mods = state
+    keyUp btn state key mods = state
+    mouseMove btn state pos = state
