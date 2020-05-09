@@ -4,7 +4,7 @@ cabal-version: 1.12
 --
 -- see: https://github.com/sol/hpack
 --
--- hash: 4f13d2c62e8a3ae214ab95ca9e9f423c85d9314c63ba26d59c4c59be5fcd6cc4
+-- hash: 2593dbf5c79a065a959f8b102c60c4c8f789ef1470cc81f0520ed93ef2a7d7c6
 
 name:           DGG
 version:        0.1.0.0
@@ -34,6 +34,7 @@ library
       src
   build-depends:
       base >=4.7 && <5
+    , containers >=0.6.2.1
     , gloss >=1.13
   default-language: Haskell2010
 
@@ -47,5 +48,6 @@ executable dgg
   build-depends:
       DGG
     , base >=4.7 && <5
+    , containers >=0.6.2.1
     , gloss >=1.13
   default-language: Haskell2010

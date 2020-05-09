@@ -5,6 +5,7 @@ module GUI where
 import Graphics.Gloss.Data.Color
 import Graphics.Gloss.Data.Picture(Picture(..))
 import Graphics.Gloss.Interface.IO.Game(Event(..), Key(..), MouseButton(..), Modifiers(..), KeyState(..))
+import qualified Data.Map.Strict as Map
 
 class IAppObject obj where
     name :: obj -> String
@@ -61,3 +62,5 @@ class (IAppObject obj) => IInteractive obj where
 -- Layout things
 class (IDrawable obj) => IContainer obj where
     children        :: obj -> [WDrawable]
+
+data AppState = Map String WAppObject
