@@ -7,46 +7,51 @@ import Graphics.Gloss.Data.Display(Display(..))
 import Graphics.Gloss.Data.Color(Color(..), black)
 import Graphics.Gloss.Data.Picture(Picture(..))
 import Graphics.Gloss.Interface.IO.Game
+import Graphics.Gloss.Data.ViewPort
 import System.Exit(exitSuccess)
 import Debug.Trace(trace)
 
 import GUI      -- Get everything from the GUI class. It's all needed
 
 start       :: String -> (Int, Int) -> (Int, Int) -> [WAppObject] -> IO ()
-appDraw     :: [WAppObject] -> (IO Picture)
-appEvent    :: Int -> Event -> [WAppObject] -> (IO [WAppObject])
+appDraw     :: (Int, Int) -> [WAppObject] -> (IO Picture)
+appEvent    :: (Int, Int) -> Int -> Event -> [WAppObject] -> (IO [WAppObject])
 appUpdate   :: Int -> Float -> [WAppObject] -> (IO [WAppObject])
 
 start title size position initalState =
-    playIO window bgColor 30 initalState appDraw (appEvent 0) (appUpdate 0)
+    playIO window bgColor 30 initalState (appDraw size) (appEvent size 0) (appUpdate 0)
     where
         window = InWindow title size position
         bgColor = black
 
-appDraw objects =
-    return $ Pictures $ map (\obj -> drawObj obj objects) objects
+appDraw (width, height) objects =
+    return $ applyViewPortToPicture 
+                (viewPortInit   { viewPortTranslate = (-fromIntegral width / 2, fromIntegral height / 2)  }) $ 
+                    Pictures $ map (\obj -> Scale 1 (-1) $ drawObj obj objects) objects
 
-appEvent _ (EventKey (SpecialKey KeyF4) Down alt _) objects =
+{-appEvent _ (EventKey (SpecialKey KeyF4) Down alt _) objects =
     do
         putStrLn "Exiting..."
-        exitSuccess
-appEvent startInd event objects
+        exitSuccess-}
+appEvent (width, height) startInd event objects
     | length objects == 0 =
-        do
-            putStrLn "No objects"
+        --do
+            --putStrLn "No objects"
             return objects
-    | startInd == (length objects) =
+    | startInd == (length objects) - 1 =
         return newObjects
     | otherwise =
-        appEvent (startInd + 1) event newObjects
+        appEvent (width, height) (startInd + 1) event newObjects
     where
-        newObjects = eventHandler (objects !! startInd) objects event
+        newObjects = eventHandler (objects !! startInd) (width, height) objects event
 
 appUpdate startInd deltaTime objects
     | length objects == 0 =
         return objects
     | startInd == (length objects) - 1 =
-        return $ newObjects
+        --do
+            --putStrLn $ "There are " ++ (show $ length newObjects) ++ " objects."
+            return $ newObjects
     | otherwise =
         appUpdate (startInd + 1) deltaTime newObjects
     where

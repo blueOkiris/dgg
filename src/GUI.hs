@@ -2,6 +2,7 @@
 {-# LANGUAGE ExistentialQuantification #-}
 module GUI where
 
+import Data.List(findIndices)
 import Graphics.Gloss.Data.Color
 import Graphics.Gloss.Data.Picture(Picture(..))
 import Graphics.Gloss.Interface.IO.Game
@@ -45,22 +46,22 @@ instance IDrawable WAppObject where
 
 -- Interactive widgets like a button
 class (IAppObject obj) => IInteractive obj where
-    eventHandler    :: obj -> [WAppObject] -> Event -> [WAppObject]
-    eventHandler obj state (EventKey (MouseButton btn) Down mod (x, y)) =
-        mouseDown obj state btn mod (x, y)
-    eventHandler obj state (EventKey (MouseButton btn) Up mod (x, y)) =
-        mouseUp obj state btn mod (x, y)
-    eventHandler obj state (EventKey (Char key) Down mod _) =
+    eventHandler    :: obj -> (Int, Int) -> [WAppObject] -> Event -> [WAppObject]
+    eventHandler obj (screenWidth, screenHeight) state (EventKey (MouseButton btn) Down mod (x, y)) =
+        mouseDown obj state btn mod (x + (fromIntegral screenWidth / 2), -(y - (fromIntegral screenHeight / 2)))
+    eventHandler obj (screenWidth, screenHeight) state (EventKey (MouseButton btn) Up mod (x, y)) =
+        mouseUp obj state btn mod (x + (fromIntegral screenWidth / 2), -(y - (fromIntegral screenHeight / 2)))
+    eventHandler obj (screenWidth, screenHeight) state (EventKey (Char key) Down mod _) =
         keyDown obj state (Char key) mod
-    eventHandler obj state (EventKey (Char key) Up mod _) =
+    eventHandler obj (screenWidth, screenHeight) state (EventKey (Char key) Up mod _) =
         keyUp obj state (Char key) mod
-    eventHandler obj state (EventKey (SpecialKey key) Down mod _) =
+    eventHandler obj (screenWidth, screenHeight) state (EventKey (SpecialKey key) Down mod _) =
         keyDown obj state (SpecialKey key) mod
-    eventHandler obj state (EventKey (SpecialKey key) Up mod _) =
+    eventHandler obj (screenWidth, screenHeight) state (EventKey (SpecialKey key) Up mod _) =
         keyUp obj state (SpecialKey key) mod
-    eventHandler obj state (EventMotion (x, y)) =
-        mouseMove obj state (x, y)
-    eventHandler obj state _ =
+    eventHandler obj (screenWidth, screenHeight) state (EventMotion (x, y)) =
+        mouseMove obj state (x + (fromIntegral screenWidth / 2), -(y - (fromIntegral screenHeight / 2)))
+    eventHandler obj _ state _ =
         state
 
     updateObj       :: obj -> [WAppObject] -> Float -> [WAppObject]
@@ -84,47 +85,21 @@ class (IDrawable obj) => IContainer obj where
 instance IContainer WAppObject where
     children (WAppObject o) = children o
 
--- Create a button widget
-data Button = Button
-    { btnLeftClick      :: Modifiers -> [WAppObject] -> [WAppObject]
-    , btnLeftRelease    :: Modifiers -> [WAppObject] -> [WAppObject]
-    , btnName           :: String 
-    , btnPosition       :: (Int, Int)
-    , btnSize           :: (Int, Int) }
-instance IAppObject Button where
-    name btn =
-        btnName btn
-instance IDrawable Button where
-    drawObj btn state =
-        Blank                   -- TODO: Implement button drawing code
-    position btn =
-        btnPosition btn
-    size btn =
-        btnSize btn
-instance IInteractive Button where
-    mouseDown btn state clickType mods (x, y)
-        | inBtn =
-            (btnLeftClick btn) mods state
-        | otherwise =
-            state
-        where
-            (bx, by) = btnPosition btn
-            (bw, bh) = btnSize btn
-            (xi, yi) = (round x, round y)
-            inBtn = (xi >= bx) && (xi <= bx + bw) && (yi > by) && (yi <= by + bh)
+-- State manipulation
+removeObject    :: String -> [WAppObject] -> [WAppObject]
+replaceObject   :: String -> WAppObject -> [WAppObject] -> [WAppObject]
+removeObject objName state
+    | objInds == [] =
+        state
+    | otherwise =
+        (fst $ splitAt (objInds !! 0) state) ++ (snd $ splitAt ((objInds !! 0) + 1) state)
+    where
+        objInds = (findIndices (\obj -> (name obj) == objName) state)
+replaceObject objName newValue state
+    | objInds == [] =
+        state
+    | otherwise =
+        (fst $ splitAt (objInds !! 0) state) ++ [newValue] ++ (snd $ splitAt ((objInds !! 0) - 1) state)
+    where
+        objInds = (findIndices (\obj -> (name obj) == objName) state)
 
-    mouseUp btn state clickType mods (x, y)
-        | inBtn =
-            (btnLeftRelease btn) mods state
-        | otherwise =
-            state
-        where
-            (bx, by) = btnPosition btn
-            (bw, bh) = btnSize btn
-            (xi, yi) = (round x, round y)
-            inBtn = (xi >= bx) && (xi <= bx + bw) && (yi > by) && (yi <= by + bh)
-
-    updateObj btn state deltaTime = state
-    keyDown btn state key mods = state
-    keyUp btn state key mods = state
-    mouseMove btn state pos = state
