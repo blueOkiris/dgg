@@ -13,16 +13,15 @@ import Debug.Trace(trace)
 
 import GUI      -- Get everything from the GUI class. It's all needed
 
-start       :: String -> (Int, Int) -> (Int, Int) -> [WAppObject] -> IO ()
+start       :: String -> Color -> (Int, Int) -> (Int, Int) -> [WAppObject] -> IO ()
 appDraw     :: (Int, Int) -> [WAppObject] -> (IO Picture)
 appEvent    :: (Int, Int) -> Int -> Event -> [WAppObject] -> (IO [WAppObject])
 appUpdate   :: Int -> Float -> [WAppObject] -> (IO [WAppObject])
 
-start title size position initalState =
+start title bgColor size position initalState =
     playIO window bgColor 30 initalState (appDraw size) (appEvent size 0) (appUpdate 0)
     where
         window = InWindow title size position
-        bgColor = black
 
 appDraw (width, height) objects =
     return $ applyViewPortToPicture 

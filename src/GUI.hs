@@ -99,7 +99,7 @@ replaceObject objName newValue state
     | objInds == [] =
         state
     | otherwise =
-        (fst $ splitAt (objInds !! 0) state) ++ [newValue] ++ (snd $ splitAt ((objInds !! 0) - 1) state)
+        (fst $ splitAt (objInds !! 0) state) ++ [newValue] ++ (snd $ splitAt ((objInds !! 0) + 1) state)
     where
         objInds = (findIndices (\obj -> (name obj) == objName) state)
 
