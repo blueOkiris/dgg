@@ -20,7 +20,7 @@ btn1 =  Button
     , btnBGColor =              blue
     , btnBGHighlightColor =     red
     , btnBGClickedColor =       green
-    , btnBackgroundImage =      Blank
+    , btnBGImage =              Blank
     , btnIsHighlighted =        False
     , btnIsClicked =            False }
 

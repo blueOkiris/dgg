@@ -20,7 +20,7 @@ data Button = Button
     , btnBGColor                :: Color
     , btnBGHighlightColor       :: Color
     , btnBGClickedColor         :: Color
-    , btnBackgroundImage        :: Picture 
+    , btnBGImage                :: Picture 
     , btnIsHighlighted          :: Bool
     , btnIsClicked              :: Bool }
 instance IAppObject Button where name btn = btnName btn
@@ -28,7 +28,8 @@ instance IContainer Button where children btn = []
 instance IDrawable Button where -- TODO: Implement button drawing code
     drawObj btn state =
         Pictures    [ coloredBorder
-                    , coloredFill ]
+                    , coloredFill 
+                    , btnBGImage btn ]
         where
             border =        translate (fromIntegral $ fst $ position btn) (fromIntegral $ snd $ position btn) $
                                 rectangleSolid (fromIntegral $ fst $ size btn) (fromIntegral $ snd $ size btn)
