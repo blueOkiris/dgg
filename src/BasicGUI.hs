@@ -29,7 +29,7 @@ instance IDrawable Button where -- TODO: Implement button drawing code
     drawObj btn state =
         Pictures    [ coloredBorder
                     , coloredFill 
-                    , btnBGImage btn ]
+                    , translate (fromIntegral $ fst $ position btn) (fromIntegral $ snd $ position btn) $ btnBGImage btn ]
         where
             border =        translate (fromIntegral $ fst $ position btn) (fromIntegral $ snd $ position btn) $
                                 rectangleSolid (fromIntegral $ fst $ size btn) (fromIntegral $ snd $ size btn)
